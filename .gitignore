@@ -23,6 +23,9 @@ htmlcov/
 # Claude Code
 .claude/
 
+# Internal milestones / planning docs
+milestones/
+
 # macOS
 .DS_Store
 
