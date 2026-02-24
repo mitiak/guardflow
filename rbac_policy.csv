@@ -1,0 +1,11 @@
+p, viewer, echo
+p, viewer, file_read
+p, operator, echo
+p, operator, file_read
+p, operator, http_request
+p, operator, shell_command
+p, admin, echo
+p, admin, file_read
+p, admin, http_request
+p, admin, shell_command
+p, admin, code_exec

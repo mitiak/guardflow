@@ -34,3 +34,10 @@ class PolicyError(BaseModel):
     code: str = "UNAUTHORIZED_TOOL"
     tool: str
     detail: str
+
+
+class RbacError(BaseModel):
+    code: str = "RBAC_DENIED"
+    role: str
+    tool: str
+    detail: str

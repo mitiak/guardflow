@@ -10,9 +10,10 @@ from pydantic import ValidationError
 from rich import print as rprint
 from rich.logging import RichHandler
 
-from guardflow.models import PolicyError, SchemaError
+from guardflow.models import PolicyError, RbacError, SchemaError
 from guardflow.pipeline import run_pipeline
 from guardflow.policy import Policy, PolicyViolation
+from guardflow.rbac import RbacDenial, RbacPolicy
 
 app = typer.Typer(
     name="guardflow",
@@ -38,6 +39,8 @@ def run(
         ),
     ),
     policy_path: str = typer.Option("policy.json", "--policy", "-p", help="Path to policy config file."),
+    rbac_model: str = typer.Option("model.conf", "--rbac-model", help="Path to Casbin model.conf file."),
+    rbac_policy: str = typer.Option("rbac_policy.csv", "--rbac-policy", help="Path to Casbin RBAC policy CSV file."),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show pipeline debug logs."),
 ) -> None:
     """Parse a tool-call request and run it through the pipeline.
@@ -74,7 +77,13 @@ def run(
         raise typer.Exit(code=1)
 
     try:
-        result = run_pipeline(data, loaded_policy)
+        loaded_rbac = RbacPolicy.load(Path(rbac_model), Path(rbac_policy))
+    except (FileNotFoundError, OSError) as exc:
+        rprint(f"[red]Error:[/red] RBAC config not found — {exc}", file=sys.stderr)
+        raise typer.Exit(code=1)
+
+    try:
+        result = run_pipeline(data, loaded_policy, loaded_rbac)
         rprint(result.model_dump_json(indent=2))
     except ValidationError as exc:
         err = SchemaError(detail=str(exc))
@@ -82,6 +91,14 @@ def run(
         raise typer.Exit(code=1)
     except PolicyViolation as exc:
         err = PolicyError(tool=exc.tool, detail=f"Tool '{exc.tool}' is not in the allowlist")
+        rprint(err.model_dump_json(indent=2), file=sys.stderr)
+        raise typer.Exit(code=1)
+    except RbacDenial as exc:
+        err = RbacError(
+            role=exc.role,
+            tool=exc.tool,
+            detail=f"Role '{exc.role}' is not permitted to use tool '{exc.tool}'",
+        )
         rprint(err.model_dump_json(indent=2), file=sys.stderr)
         raise typer.Exit(code=1)
 
@@ -113,6 +130,27 @@ def policy_validate(
         rprint(f"[red]Error:[/red] invalid policy file — {exc}", file=sys.stderr)
         raise typer.Exit(code=1)
     rprint("[green]Policy file is valid.[/green]")
+
+
+@policy_app.command("check")
+def policy_check(
+    role: str = typer.Option(..., "--role", help="Actor role to check."),
+    tool: str = typer.Option(..., "--tool", help="Tool name to check."),
+    rbac_model: str = typer.Option("model.conf", "--rbac-model", help="Path to Casbin model.conf file."),
+    rbac_policy: str = typer.Option("rbac_policy.csv", "--rbac-policy", help="Path to Casbin RBAC policy CSV file."),
+) -> None:
+    """Check whether a role is permitted to use a tool under the RBAC policy."""
+    try:
+        loaded_rbac = RbacPolicy.load(Path(rbac_model), Path(rbac_policy))
+    except (FileNotFoundError, OSError) as exc:
+        rprint(f"[red]Error:[/red] RBAC config not found — {exc}", file=sys.stderr)
+        raise typer.Exit(code=1)
+
+    if loaded_rbac.is_allowed(role, tool):
+        rprint(f"[green]ALLOWED:[/green] role '{role}' may use tool '{tool}'")
+    else:
+        rprint(f"[red]DENIED:[/red] role '{role}' is not permitted to use tool '{tool}'", file=sys.stderr)
+        raise typer.Exit(code=1)
 
 
 @app.command()
