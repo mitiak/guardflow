@@ -20,6 +20,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Claude Code
+.claude/
+
 # macOS
 .DS_Store
 
