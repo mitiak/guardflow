@@ -28,3 +28,9 @@ class ToolResult(BaseModel):
 class SchemaError(BaseModel):
     code: str = "SCHEMA_REJECTED"
     detail: str
+
+
+class PolicyError(BaseModel):
+    code: str = "UNAUTHORIZED_TOOL"
+    tool: str
+    detail: str

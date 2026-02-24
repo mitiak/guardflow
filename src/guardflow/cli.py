@@ -3,14 +3,16 @@
 import json
 import logging
 import sys
+from pathlib import Path
 
 import typer
 from pydantic import ValidationError
 from rich import print as rprint
 from rich.logging import RichHandler
 
-from guardflow.models import SchemaError
+from guardflow.models import PolicyError, SchemaError
 from guardflow.pipeline import run_pipeline
+from guardflow.policy import Policy, PolicyViolation
 
 app = typer.Typer(
     name="guardflow",
@@ -18,6 +20,9 @@ app = typer.Typer(
     add_completion=False,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
+
+policy_app = typer.Typer(name="policy", help="Manage execution policies.")
+app.add_typer(policy_app)
 
 
 @app.command()
@@ -32,6 +37,7 @@ def run(
             "examples/http_request.json, examples/file_read.json, examples/code_exec.json"
         ),
     ),
+    policy_path: str = typer.Option("policy.json", "--policy", "-p", help="Path to policy config file."),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show pipeline debug logs."),
 ) -> None:
     """Parse a tool-call request and run it through the pipeline.
@@ -43,8 +49,6 @@ def run(
       guardflow run -i examples/shell_command.json
       guardflow run -i '{"actor":{"id":"u1","role":"viewer"},"tool_call":{"tool":"echo","args":{"text":"hi"}}}'
     """
-    import pathlib
-
     if verbose:
         logging.basicConfig(
             level=logging.INFO,
@@ -53,7 +57,7 @@ def run(
         )
 
     raw = input
-    path = pathlib.Path(raw)
+    path = Path(raw)
     if path.suffix == ".json" and path.exists():
         raw = path.read_text()
 
@@ -64,18 +68,51 @@ def run(
         raise typer.Exit(code=1)
 
     try:
-        result = run_pipeline(data)
+        loaded_policy = Policy.load(Path(policy_path))
+    except FileNotFoundError:
+        rprint(f"[red]Error:[/red] policy file not found: {policy_path}", file=sys.stderr)
+        raise typer.Exit(code=1)
+
+    try:
+        result = run_pipeline(data, loaded_policy)
         rprint(result.model_dump_json(indent=2))
     except ValidationError as exc:
         err = SchemaError(detail=str(exc))
         rprint(err.model_dump_json(indent=2), file=sys.stderr)
         raise typer.Exit(code=1)
+    except PolicyViolation as exc:
+        err = PolicyError(tool=exc.tool, detail=f"Tool '{exc.tool}' is not in the allowlist")
+        rprint(err.model_dump_json(indent=2), file=sys.stderr)
+        raise typer.Exit(code=1)
 
 
-@app.command()
-def policy() -> None:
-    """Manage execution policies (coming soon)."""
-    rprint("[yellow]Policy management coming soon.[/yellow]")
+@policy_app.command("show")
+def policy_show(
+    policy_path: str = typer.Option("policy.json", "--policy", "-p", help="Path to policy config file."),
+) -> None:
+    """Show the current tool allowlist."""
+    try:
+        loaded_policy = Policy.load(Path(policy_path))
+    except FileNotFoundError:
+        rprint(f"[red]Error:[/red] policy file not found: {policy_path}", file=sys.stderr)
+        raise typer.Exit(code=1)
+    rprint(loaded_policy.model_dump_json(indent=2))
+
+
+@policy_app.command("validate")
+def policy_validate(
+    policy_path: str = typer.Option("policy.json", "--policy", "-p", help="Path to policy config file."),
+) -> None:
+    """Validate the policy config file."""
+    try:
+        Policy.load(Path(policy_path))
+    except FileNotFoundError:
+        rprint(f"[red]Error:[/red] policy file not found: {policy_path}", file=sys.stderr)
+        raise typer.Exit(code=1)
+    except Exception as exc:
+        rprint(f"[red]Error:[/red] invalid policy file — {exc}", file=sys.stderr)
+        raise typer.Exit(code=1)
+    rprint("[green]Policy file is valid.[/green]")
 
 
 @app.command()

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-24
+
+### Added
+- `policy.json` — default tool allowlist config (`echo`, `http_request`, `file_read`)
+- `src/guardflow/policy.py` — `Policy` model with `load()` / `is_allowed()`; `PolicyViolation` exception
+- `PolicyError` model in `src/guardflow/models.py` — `UNAUTHORIZED_TOOL` structured error
+- `policy show` subcommand — prints the active tool allowlist as JSON
+- `policy validate` subcommand — validates the policy config file and reports errors
+- `--policy` / `-p` option on `guardflow run` — path to policy config file (default: `policy.json`)
+- Allowlist policy test suite (`pytest -m allowlist_policy`)
+
+### Changed
+- `pipeline.authorize()` now enforces the allowlist; raises `PolicyViolation` for blocked tools
+- `run_pipeline()` now requires a `Policy` argument
+- `guardflow run` loads policy before executing; returns `UNAUTHORIZED_TOOL` error on rejection
+- `policy` command replaced with a subcommand group (`show`, `validate`)
+- Bumped version to `0.3.0`
+
 ## [0.2.0] - 2026-02-24
 
 ### Added
