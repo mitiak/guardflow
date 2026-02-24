@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from guardflow.models import RunRequest, ToolResult
 from guardflow.policy import Policy, PolicyViolation
 from guardflow.rbac import RbacPolicy, RbacDenial
+from guardflow.sandbox import run_python, SandboxError
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,12 @@ def authorize(request: RunRequest, policy: Policy, rbac: RbacPolicy) -> RunReque
 
 
 def execute(request: RunRequest) -> ToolResult:
-    """Execute the tool call in a sandboxed context."""
+    """Execute the tool call, dispatching to the Docker sandbox for python_exec."""
     logger.info(f"pipeline.execute: {request}")
+    if request.tool_call.tool == "python_exec":
+        code = request.tool_call.args.get("code", "")
+        sandbox_result = run_python(code)
+        return ToolResult(step="execute", ok=True, data={**request.model_dump(), "sandbox": sandbox_result})
     return ToolResult(step="execute", ok=True, data=request.model_dump())
 
 

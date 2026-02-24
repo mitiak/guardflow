@@ -10,10 +10,11 @@ from pydantic import ValidationError
 from rich import print as rprint
 from rich.logging import RichHandler
 
-from guardflow.models import PolicyError, RbacError, SchemaError
+from guardflow.models import PolicyError, RbacError, SandboxError, SchemaError
 from guardflow.pipeline import run_pipeline
 from guardflow.policy import Policy, PolicyViolation
 from guardflow.rbac import RbacDenial, RbacPolicy
+from guardflow.sandbox import SandboxError as SandboxExc
 
 app = typer.Typer(
     name="guardflow",
@@ -99,6 +100,10 @@ def run(
             tool=exc.tool,
             detail=f"Role '{exc.role}' is not permitted to use tool '{exc.tool}'",
         )
+        rprint(err.model_dump_json(indent=2), file=sys.stderr)
+        raise typer.Exit(code=1)
+    except SandboxExc as exc:
+        err = SandboxError(detail=exc.message)
         rprint(err.model_dump_json(indent=2), file=sys.stderr)
         raise typer.Exit(code=1)
 

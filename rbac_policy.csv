@@ -9,3 +9,4 @@ p, admin, file_read
 p, admin, http_request
 p, admin, shell_command
 p, admin, code_exec
+p, admin, python_exec

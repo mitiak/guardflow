@@ -1,0 +1,4 @@
+{
+  "actor": {"id": "u1", "role": "admin"},
+  "tool_call": {"tool": "python_exec", "args": {"code": "print('hello from sandbox')"}}
+}

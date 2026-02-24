@@ -65,6 +65,43 @@ The allowlist policy is configured in `policy.json` at the project root:
 
 Requests for tools not in the allowlist are rejected with an `UNAUTHORIZED_TOOL` error on stderr and exit code 1.
 
+## Docker Sandbox
+
+The `python_exec` tool runs code in an isolated Docker container with the following constraints:
+
+| Constraint | Value |
+|---|---|
+| Network | none |
+| Memory | 128 MiB |
+| CPU | 0.5 vCPU |
+| Timeout | 10 seconds |
+
+```bash
+# Execute Python code in the sandbox (requires admin role)
+uv run guardflow run --input tests/fixtures/python_exec_safe.json
+
+# Inline
+uv run guardflow run --input '{"actor":{"id":"u1","role":"admin"},"tool_call":{"tool":"python_exec","args":{"code":"print(2+2)"}}}'
+```
+
+Output includes a `sandbox` key with `stdout`, `stderr`, and `exit_code`.
+
+## RBAC
+
+Role/tool permissions are enforced by a Casbin ACL policy (`rbac_policy.csv`):
+
+| Role | Permitted tools |
+|---|---|
+| viewer | echo, file_read |
+| operator | echo, file_read, http_request, shell_command |
+| admin | all tools including python_exec |
+
+```bash
+# Check whether a role may use a tool
+uv run guardflow policy check --role viewer --tool echo
+uv run guardflow policy check --role viewer --tool python_exec
+```
+
 ## Running Tests
 
 ```bash
@@ -77,6 +114,12 @@ uv run pytest -q -m schema_validation
 # Allowlist policy tests
 uv run pytest -q -m allowlist_policy
 
+# RBAC authorization tests
+uv run pytest -q -m rbac_authorization
+
+# Docker sandbox tests (requires Docker daemon)
+uv run pytest -q -m sandbox_isolation
+
 # All tests
 uv run pytest -q
 ```
@@ -87,8 +130,7 @@ uv run pytest -q
 - **Execution pipeline** — `validate → authorize → execute` pipeline
 - **Strict schema enforcement** — Pydantic v2 models reject invalid requests with `SCHEMA_REJECTED`
 - **Tool allowlist policy** — JSON-configured allowlist rejects unauthorized tools with `UNAUTHORIZED_TOOL`
-- **Policy management** — `policy show` and `policy validate` subcommands
+- **RBAC authorization** — Casbin ACL enforces role/tool matrix; unauthorized combos return `RBAC_DENIED`
+- **Docker sandbox** — `python_exec` runs in isolated container with no network, CPU/memory limits, and timeout
+- **Policy management** — `policy show`, `policy validate`, and `policy check` subcommands
 - **JSON I/O** — accepts JSON tool-call requests, returns JSON results
-- **CLI contract tests** — pytest suite marked `cli_contract`
-- **Schema validation tests** — pytest suite marked `schema_validation`
-- **Allowlist policy tests** — pytest suite marked `allowlist_policy`

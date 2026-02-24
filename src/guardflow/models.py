@@ -41,3 +41,8 @@ class RbacError(BaseModel):
     role: str
     tool: str
     detail: str
+
+
+class SandboxError(BaseModel):
+    code: str = "SANDBOX_ERROR"
+    detail: str

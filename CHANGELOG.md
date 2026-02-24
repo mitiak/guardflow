@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0] - 2026-02-24
+
+### Added
+- `src/guardflow/sandbox.py` — `run_python()` executes code in an isolated Docker container (no network, 128 MiB RAM, 0.5 CPU, 10 s timeout); `SandboxError` exception on timeout or Docker failure
+- `SandboxError` model in `src/guardflow/models.py` — `SANDBOX_ERROR` structured error response
+- `python_exec` tool dispatched to Docker sandbox in `pipeline.execute()`; result includes `sandbox.stdout/stderr/exit_code`
+- `tests/fixtures/python_exec_safe.json` — fixture for end-to-end sandbox smoke test
+- `python_exec` added to `rbac_policy.csv` for the `admin` role
+- `python_exec` added to the default `policy.json` allowlist
+- Sandbox isolation test suite (`pytest -m sandbox_isolation`) — 5 tests; Docker-dependent tests auto-skip when daemon is unavailable
+
+### Changed
+- `pipeline.execute()` now dispatches on tool name; `python_exec` routes to sandbox
+- Bumped version to `0.5.0`
+- Added `docker>=7.0` dependency
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
