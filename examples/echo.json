@@ -1,4 +1,4 @@
 {
-  "tool": "echo",
-  "args": ["hello, world"]
+  "actor": {"id": "u1", "role": "viewer"},
+  "tool_call": {"tool": "echo", "args": {"text": "hello, world"}}
 }

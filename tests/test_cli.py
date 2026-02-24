@@ -23,7 +23,9 @@ def test_help():
 @pytest.mark.cli_contract
 def test_run_valid_input():
     """guardflow run --input '<json>' exits 0 and returns JSON."""
-    payload = json.dumps({"tool": "echo", "args": ["hi"]})
+    payload = json.dumps(
+        {"actor": {"id": "u1", "role": "viewer"}, "tool_call": {"tool": "echo", "args": {"text": "hi"}}}
+    )
     result = runner.invoke(app, ["run", "--input", payload])
     assert result.exit_code == 0
     # Output should contain valid JSON with pipeline result

@@ -4,12 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardflow"
-version = "0.1.0"
+version = "0.2.0"
 description = "A secure AI tool-call execution pipeline with policy enforcement"
 requires-python = ">=3.11"
 dependencies = [
     "typer>=0.12",
     "rich>=13.0",
+    "pydantic>=2",
 ]
 
 [project.scripts]
@@ -27,4 +28,5 @@ packages = ["src/guardflow"]
 testpaths = ["tests"]
 markers = [
     "cli_contract: CLI smoke tests",
+    "schema_validation: Pydantic schema enforcement tests",
 ]

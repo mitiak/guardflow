@@ -1,12 +1,4 @@
 {
-  "tool": "http",
-  "args": [],
-  "params": {
-    "method": "GET",
-    "url": "https://api.example.com/data",
-    "headers": {
-      "Authorization": "Bearer <token>"
-    }
-  },
-  "timeout_seconds": 30
+  "actor": {"id": "u1", "role": "viewer"},
+  "tool_call": {"tool": "http_request", "args": {"method": "GET", "url": "https://example.com"}}
 }

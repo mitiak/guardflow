@@ -1,8 +1,4 @@
 {
-  "tool": "file_read",
-  "args": ["/workspace/data/report.csv"],
-  "params": {
-    "encoding": "utf-8",
-    "max_bytes": 1048576
-  }
+  "actor": {"id": "u1", "role": "viewer"},
+  "tool_call": {"tool": "file_read", "args": {"path": "/etc/hosts"}}
 }

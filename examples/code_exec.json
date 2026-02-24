@@ -1,10 +1,4 @@
 {
-  "tool": "code_exec",
-  "args": [],
-  "params": {
-    "language": "python",
-    "code": "print(sum(range(10)))",
-    "sandbox": true
-  },
-  "timeout_seconds": 5
+  "actor": {"id": "u3", "role": "admin"},
+  "tool_call": {"tool": "code_exec", "args": {"language": "python", "code": "print('hello')"}}
 }

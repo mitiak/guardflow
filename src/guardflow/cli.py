@@ -5,9 +5,11 @@ import logging
 import sys
 
 import typer
+from pydantic import ValidationError
 from rich import print as rprint
 from rich.logging import RichHandler
 
+from guardflow.models import SchemaError
 from guardflow.pipeline import run_pipeline
 
 app = typer.Typer(
@@ -39,7 +41,7 @@ def run(
     \b
       guardflow run -i examples/echo.json
       guardflow run -i examples/shell_command.json
-      guardflow run -i '{"tool":"echo","args":["hi"]}'
+      guardflow run -i '{"actor":{"id":"u1","role":"viewer"},"tool_call":{"tool":"echo","args":{"text":"hi"}}}'
     """
     import pathlib
 
@@ -61,8 +63,13 @@ def run(
         rprint(f"[red]Error:[/red] invalid JSON — {exc}", file=sys.stderr)
         raise typer.Exit(code=1)
 
-    result = run_pipeline(data)
-    rprint(json.dumps(result, indent=2))
+    try:
+        result = run_pipeline(data)
+        rprint(result.model_dump_json(indent=2))
+    except ValidationError as exc:
+        err = SchemaError(detail=str(exc))
+        rprint(err.model_dump_json(indent=2), file=sys.stderr)
+        raise typer.Exit(code=1)
 
 
 @app.command()

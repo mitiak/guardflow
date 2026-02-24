@@ -1,5 +1,4 @@
 {
-  "tool": "shell",
-  "args": ["ls", "-la", "/tmp"],
-  "timeout_seconds": 10
+  "actor": {"id": "u2", "role": "operator"},
+  "tool_call": {"tool": "shell_command", "args": {"command": "ls -la"}}
 }
