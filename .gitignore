@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# uv / venv
+.venv/
+.uv/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy / ruff caches
+.mypy_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
+
+# editors
+.idea/
+.vscode/
+*.swp

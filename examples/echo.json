@@ -1,0 +1,4 @@
+{
+  "tool": "echo",
+  "args": ["hello, world"]
+}

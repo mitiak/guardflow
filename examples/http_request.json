@@ -1,0 +1,12 @@
+{
+  "tool": "http",
+  "args": [],
+  "params": {
+    "method": "GET",
+    "url": "https://api.example.com/data",
+    "headers": {
+      "Authorization": "Bearer <token>"
+    }
+  },
+  "timeout_seconds": 30
+}

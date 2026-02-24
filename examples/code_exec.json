@@ -1,0 +1,10 @@
+{
+  "tool": "code_exec",
+  "args": [],
+  "params": {
+    "language": "python",
+    "code": "print(sum(range(10)))",
+    "sandbox": true
+  },
+  "timeout_seconds": 5
+}

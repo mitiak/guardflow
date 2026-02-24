@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "guardflow"
+version = "0.1.0"
+description = "A secure AI tool-call execution pipeline with policy enforcement"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.0",
+]
+
+[project.scripts]
+guardflow = "guardflow.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/guardflow"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "cli_contract: CLI smoke tests",
+]

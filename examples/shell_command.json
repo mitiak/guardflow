@@ -1,0 +1,5 @@
+{
+  "tool": "shell",
+  "args": ["ls", "-la", "/tmp"],
+  "timeout_seconds": 10
+}
