@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0] - 2026-02-25
+
+### Added
+- `src/guardflow/redteam.py` — `RedteamCase`, `CaseResult`, `REDTEAM_CASES` (6 adversarial cases), `run_suite()`
+- `guardflow redteam run` subcommand — runs all red-team cases and prints a Rich table with pass/fail results
+- 6 attack fixture files in `tests/fixtures/redteam/` covering prompt injection, tool allowlist bypass, shell injection in tool name, data exfiltration, role escalation, and schema extra-field injection
+- Red-team regression test suite (`pytest -m redteam_suite`) — 8 tests, no Docker required
+
+### Changed
+- Replaced `redteam` stub command with `redteam_app` sub-app + `redteam run` subcommand
+- Bumped version to `0.6.0`
+
 ## [0.5.0] - 2026-02-24
 
 ### Added

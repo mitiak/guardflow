@@ -49,8 +49,8 @@ uv run guardflow policy validate
 # Use a custom policy file
 uv run guardflow run -i examples/echo.json --policy /path/to/policy.json
 
-# Red-team guardrail regression (coming soon)
-uv run guardflow redteam
+# Red-team guardrail regression suite
+uv run guardflow redteam run
 ```
 
 ## Policy
@@ -119,6 +119,9 @@ uv run pytest -q -m rbac_authorization
 
 # Docker sandbox tests (requires Docker daemon)
 uv run pytest -q -m sandbox_isolation
+
+# Red-team adversarial regression tests
+uv run pytest -q -m redteam_suite
 
 # All tests
 uv run pytest -q

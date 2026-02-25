@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardflow"
-version = "0.5.0"
+version = "0.6.0"
 description = "A secure AI tool-call execution pipeline with policy enforcement"
 requires-python = ">=3.11"
 dependencies = [
@@ -34,4 +34,5 @@ markers = [
     "allowlist_policy: Tool allowlist policy gate tests",
     "rbac_authorization: Casbin RBAC authorization gate tests",
     "sandbox_isolation: Docker sandbox execution tests",
+    "redteam_suite: Red-team adversarial guardrail regression tests",
 ]

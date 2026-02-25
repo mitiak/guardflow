@@ -14,6 +14,7 @@ from guardflow.models import PolicyError, RbacError, SandboxError, SchemaError
 from guardflow.pipeline import run_pipeline
 from guardflow.policy import Policy, PolicyViolation
 from guardflow.rbac import RbacDenial, RbacPolicy
+from guardflow.redteam import run_suite
 from guardflow.sandbox import SandboxError as SandboxExc
 
 app = typer.Typer(
@@ -158,10 +159,52 @@ def policy_check(
         raise typer.Exit(code=1)
 
 
-@app.command()
-def redteam() -> None:
-    """Run the red-team guardrail regression suite (coming soon)."""
-    rprint("[yellow]Red-team suite coming soon.[/yellow]")
+redteam_app = typer.Typer(name="redteam", help="Red-team adversarial guardrail regression suite.")
+app.add_typer(redteam_app)
+
+
+@redteam_app.command("run")
+def redteam_run(
+    policy_path: str = typer.Option("policy.json", "--policy", "-p", help="Path to policy config file."),
+    rbac_model: str = typer.Option("model.conf", "--rbac-model", help="Path to Casbin model.conf file."),
+    rbac_policy: str = typer.Option("rbac_policy.csv", "--rbac-policy", help="Path to Casbin RBAC policy CSV file."),
+) -> None:
+    """Run the red-team adversarial regression suite against the active policy."""
+    from rich.console import Console
+    from rich.table import Table
+
+    try:
+        loaded_policy = Policy.load(Path(policy_path))
+    except FileNotFoundError:
+        rprint(f"[red]Error:[/red] policy file not found: {policy_path}", file=sys.stderr)
+        raise typer.Exit(code=1)
+    try:
+        loaded_rbac = RbacPolicy.load(Path(rbac_model), Path(rbac_policy))
+    except (FileNotFoundError, OSError) as exc:
+        rprint(f"[red]Error:[/red] RBAC config not found — {exc}", file=sys.stderr)
+        raise typer.Exit(code=1)
+
+    results = run_suite(loaded_policy, loaded_rbac)
+
+    console = Console()
+    table = Table(title="Red-team Results", show_lines=True)
+    table.add_column("", width=2)
+    table.add_column("Case", style="bold")
+    table.add_column("Expected")
+    table.add_column("Actual")
+    for r in results:
+        icon = "[green]✓[/green]" if r.passed else "[red]✗[/red]"
+        style = "green" if r.passed else "red"
+        table.add_row(icon, r.case.name, r.case.expected, f"[{style}]{r.actual}[/{style}]")
+    console.print(table)
+
+    passed = sum(1 for r in results if r.passed)
+    total = len(results)
+    if passed == total:
+        rprint(f"[green]{passed}/{total} cases passed.[/green]")
+    else:
+        rprint(f"[red]{passed}/{total} cases passed.[/red]", file=sys.stderr)
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":

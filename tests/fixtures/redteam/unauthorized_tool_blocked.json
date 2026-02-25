@@ -1,0 +1,1 @@
+{"actor":{"id":"attacker","role":"admin"},"tool_call":{"tool":"rm_rf","args":{"path":"/"}}}
