@@ -33,6 +33,14 @@ def _load_rbac() -> RbacPolicy:
 app = FastAPI(title="guardflow", version="0.1.0")
 
 
+class _HealthFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "GET /health" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(_HealthFilter())
+
+
 class AuthorizeRequest(BaseModel):
     actor: Actor
     tool_call: ToolCall
