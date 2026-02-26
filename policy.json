@@ -1,3 +1,13 @@
 {
-  "allowed_tools": ["echo", "http_request", "file_read", "shell_command", "code_exec", "python_exec"]
+  "allowed_tools": [
+    "echo",
+    "http_request",
+    "file_read",
+    "shell_command",
+    "code_exec",
+    "python_exec",
+    "log_read",
+    "threat_lookup",
+    "report_generate"
+  ]
 }

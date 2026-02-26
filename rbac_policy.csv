@@ -10,3 +10,12 @@ p, admin, http_request
 p, admin, shell_command
 p, admin, code_exec
 p, admin, python_exec
+p, analyst, log_read
+p, analyst, threat_lookup
+p, analyst, report_generate
+p, responder, log_read
+p, responder, threat_lookup
+p, responder, report_generate
+p, admin, log_read
+p, admin, threat_lookup
+p, admin, report_generate
